@@ -1,96 +1,159 @@
-Media Platform Backend
+f````markdown
+# 📺 Media Platform Backend
 
-This is a robust backend for a media platform built with Node.js, Express, and MongoDB. It allows admin users to upload media files, generate secure streaming links, and track detailed analytics. The project includes features like JWT authentication, Redis caching for performance, and rate limiting for security.
+A production-ready **Node.js + Express backend** for managing media content.
+It supports secure file uploads, streaming, analytics, caching, and deployment via Docker.
 
-Features
+---
 
-Secure Authentication: Signup and Login for admin users using JWT.
+## 🚀 Features
 
-Media Upload: Upload audio/video files directly to an AWS S3 bucket.
+-   🔐 **Secure Authentication** with JWT (Signup & Login for admins)
+-   ☁️ **Media Uploads** to AWS S3
+-   🎬 **Signed Streaming Links** (short-lived & secure)
+-   📊 **View Tracking & Analytics** (logs every view with IP + timestamp)
+-   ⚡ **Redis Caching** for analytics queries
+-   🛡️ **Rate Limiting** to prevent abuse
+-   🐳 **Dockerized Deployment** (with MongoDB + Redis)
+-   ✅ **Automated Testing** (Jest + Supertest)
 
-Secure Streaming Links: Generate short-lived, signed URLs for media assets.
+---
 
-View Tracking & Analytics: Log every media view and retrieve aggregated analytics.
+## 📂 Tech Stack
 
-Redis Caching: Caches analytics data to reduce database load and improve response times.
+-   **Backend**: Node.js, Express
+-   **Database**: MongoDB
+-   **Cache**: Redis
+-   **Storage**: AWS S3
+-   **Testing**: Jest, Supertest
+-   **Deployment**: Docker, Docker Compose
 
-Rate Limiting: Protects the view logging endpoint from abuse.
+---
 
-Dockerized: Comes with a multi-stage Dockerfile and docker-compose.yml for easy, optimized deployment.
+## ⚙️ Prerequisites
 
-Automated Testing: Includes a full test suite using Jest and Supertest.
+-   [Node.js](https://nodejs.org/) (v18 or higher)
+-   [MongoDB](https://www.mongodb.com/)
+-   [Redis](https://redis.io/)
+-   [AWS S3 Bucket](https://aws.amazon.com/s3/)
+-   [Docker](https://www.docker.com/) & [Docker Compose](https://docs.docker.com/compose/)
 
-Project Setup
-Prerequisites
+---
 
-Node.js (v18 or higher)
+## 📦 Installation & Local Setup
 
-MongoDB
+1.  **Clone the repository**
+    ```bash
+    git clone <your-repository-url>
+    cd <repository-name>
+    ```
 
-Redis
+2.  **Install dependencies**
+    ```bash
+    npm install
+    ```
 
-Docker + Docker Compose
+3.  **Create environment file**
+    ```bash
+    cp .env.example local.env
+    ```
+    Update the values inside `local.env`.
 
-An AWS account with an S3 bucket
+4.  **Run the server**
+    ```bash
+    npm start
+    ```
+    The server runs on: `http://localhost:5000`
 
-Installation & Setup
+---
 
-Clone the repository:
+## 🧾 Environment Variables
 
-git clone <your-repository-url>
-cd <repository-name>
+Create a `.env` or `docker.env` file with the following variables:
 
+```env
+# Server
+PORT=5000
+NODE_ENV=development
+JWT_SECRET=your_jwt_secret
 
-Install dependencies (for local dev):
+# Database
+MONGO_URI=mongodb://localhost:27017/mail
 
-npm install
+# Redis
+REDIS_HOST=localhost
+REDIS_PORT=6379
 
+# AWS S3
+AWS_ACCESS_KEY_ID=your_access_key
+AWS_SECRET_ACCESS_KEY=your_secret_key
+AWS_REGION=your_region
+AWS_S3_BUCKET=your_bucket_name
+````
 
-Set up environment variables:
-Create local and Docker env files:
+-----
 
-cp .env.example local.env
-cp .env.example docker.env
+## 🐳 Running with Docker
 
+### 1\. Build & Run with Docker
 
-Use local.env when running locally (npm start)
+```bash
+docker build -t media-platform-backend .
+docker run --env-file docker.env -p 5000:5000 -d media-platform-backend
+```
 
-Use docker.env when running with Docker (docker-compose)
+### 2\. Using Docker Compose (Recommended)
 
-Start the development server locally:
+```bash
+docker-compose up --build
+```
 
-npm start
+This command starts the following services:
 
-Running with Docker
+  - `app` → Node.js backend
+  - `mongo` → MongoDB database
+  - `redis` → Redis cache
 
-This project includes a docker-compose.yml that sets up the backend, MongoDB, and Redis in one command.
+Access the services at:
 
-Build and start all services:
+  - **Backend** → `http://localhost:5000`
+  - **MongoDB** → `mongodb://mongo:27017/mail`
+  - **Redis** → `redis://redis:6379`
 
-docker-compose --env-file docker.env up --build
+To stop all running containers:
 
-
-Access the backend:
-The backend will be available at:
-
-http://localhost:5000
-
-
-Stop services:
-
+```bash
 docker-compose down
+```
 
-Running Tests
+-----
 
-To run the complete test suite, use:
+## 📡 API Endpoints (Sample)
 
+### Auth
+
+  - `POST /auth/signup` → Register a new admin user.
+  - `POST /auth/login` → Login and receive a JWT.
+
+### Media
+
+  - `POST /media/upload` → Upload a media file to S3.
+  - `GET /media/:id/stream` → Get a signed, temporary streaming link.
+
+### Analytics
+
+  - `POST /media/:id/view` → Log a view for a specific media file.
+  - `GET /media/:id/analytics` → Fetch analytics data for a media file.
+
+-----
+
+## 🧪 Running Tests
+
+Run all unit and integration tests:
+
+```bash
 npm test
+```
 
-
-✅ Now your Docker section matches reality:
-
-Uses docker-compose
-
-Uses docker.env
-
-Runs on port 5000
+```
+```
