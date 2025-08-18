@@ -13,5 +13,6 @@ export default {
   AWS_REGION:process.env.AWS_REGION,
   AWS_ACCESS_KEY_ID:process.env.AWS_ACCESS_KEY_ID,
   AWS_SECRET_ACCESS_KEY:process.env.AWS_SECRET_ACCESS_KEY,
-  S3_BUCKET_NAME:process.env.S3_BUCKET_NAME
+  S3_BUCKET_NAME:process.env.S3_BUCKET_NAME,
+  REDIS_URI: process.env.REDIS_URI
 }

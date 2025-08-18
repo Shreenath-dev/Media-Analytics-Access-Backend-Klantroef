@@ -6,6 +6,7 @@ import isEmpty from "is-empty";
 import { S3Client, PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import mongoose from "mongoose";
+import {redisClient} from "@/integrations/redis";
 
 const s3Client = new S3Client({
   region: config.AWS_REGION,
@@ -29,10 +30,8 @@ export const media = async (req, res) => {
       return res.status(400).json({ message: 'Type must be either "video" or "audio".' });
     }
 
-    // Generate a unique file key for S3
     const fileKey = `${Date.now()}_${file.originalname.replace(/\s+/g, "_")}`;
 
-    // S3 Upload Command
     const uploadParams = {
       Bucket: config.S3_BUCKET_NAME,
       Key: fileKey,
@@ -43,7 +42,6 @@ export const media = async (req, res) => {
     const command = new PutObjectCommand(uploadParams);
     await s3Client.send(command);
 
-    // Save media asset metadata to the database
     const newMediaAsset = new Media({
       title: body.title,
       type: body.type,
@@ -94,82 +92,96 @@ export const getMedia = async (req, res) => {
   }
 };
 
-export const viewMedia = async(req,res)=>{
-    const{params}=req
-    try {
-        const mediaAsset = await Media.findById(params.id);
-        if (!mediaAsset) {
-            return res.status(404).json({ message: 'Media asset not found.' });
-        }
-
-        const viewerIp = req.ip;
-        const newViewLog = new MediaViewLog({
-            media_id: mediaAsset._id,
-            viewed_by_ip: viewerIp
-        });
-
-        await newViewLog.save();
-
-        res.status(201).json({success:true, message: 'View logged successfully.' });
-
-    } catch (error) {
-        console.error('Media View Log Error:', error);
-        res.status(500).json({success:false, message: 'Server error while logging view.' });
+export const viewMedia = async (req, res) => {
+  const { params } = req;
+  try {
+    const mediaAsset = await Media.findById(params.id);
+    if (!mediaAsset) {
+      return res.status(404).json({ message: "Media asset not found." });
     }
-}
 
-export const analyticsView = async (req,res)=>{
-    const{params}=req
-    try {
-        const mediaId = new mongoose.Types.ObjectId(params.id);
+    const viewerIp = req.ip;
+    const newViewLog = new MediaViewLog({
+      media_id: mediaAsset._id,
+      viewed_by_ip: viewerIp,
+    });
 
-        const mediaAsset = await Media.findById(mediaId);
-        if (!mediaAsset) {
-            return res.status(404).json({ message: 'Media asset not found.' });
-        }
+    await newViewLog.save();
 
-        const stats = await MediaViewLog.aggregate([
-            { $match: { media_id: mediaId } },
-            {
-                $group: {
-                    _id: "$media_id",
-                    total_views: { $sum: 1 },
-                    unique_ips_set: { $addToSet: "$viewed_by_ip" }
-                }
-            },
-            {
-                $project: {
-                    _id: 0,
-                    total_views: 1,
-                    unique_ips: { $size: "$unique_ips_set" }
-                }
-            }
-        ]);
+    res.status(201).json({ success: true, message: "View logged successfully." });
+  } catch (error) {
+    console.error("Media View Log Error:", error);
+    res.status(500).json({ success: false, message: "Server error while logging view." });
+  }
+};
 
-        const dailyViews = await MediaViewLog.aggregate([
-            { $match: { media_id: mediaId } },
-            {
-                $group: {
-                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$timestamp" } },
-                    count: { $sum: 1 }
-                }
-            },
-            { $sort: { _id: 1 } } 
-        ]);
+export const analyticsView = async (req, res) => {
+  const { params } = req;
+  const cacheKey = `analytics:${params.id}`;
 
-        const analyticsResult = {
-            total_views: stats.length > 0 ? stats[0].total_views : 0,
-            unique_ips: stats.length > 0 ? stats[0].unique_ips : 0,
-            views_per_day: dailyViews.reduce((acc, day) => {
-                acc[day._id] = day.count;
-                return acc;
-            }, {})
-        };
+  try {
+    console.log("opjjo",cacheKey)
 
-        res.status(200).json({success:true,data:analyticsResult});
-
-    } catch (error) {
-        console.error('Analytics Error:', error);
-        res.status(500).json({ success:false,message: 'Server error while fetching analytics.' });
+    const cachedData = await redisClient.get(cacheKey);
+    if (cachedData) {
+      return res.status(200).json({
+        source: "cache",
+        data: JSON.parse(cachedData),
+      });
     }
-}
+    console.log("opo")
+    const mediaId = new mongoose.Types.ObjectId(params.id);
+
+    const mediaAsset = await Media.findById(mediaId);
+    if (!mediaAsset) {
+      return res.status(404).json({ message: "Media asset not found." });
+    }
+
+    const stats = await MediaViewLog.aggregate([
+      { $match: { media_id: mediaId } },
+      {
+        $group: {
+          _id: "$media_id",
+          total_views: { $sum: 1 },
+          unique_ips_set: { $addToSet: "$viewed_by_ip" },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          total_views: 1,
+          unique_ips: { $size: "$unique_ips_set" },
+        },
+      },
+    ]);
+
+    const dailyViews = await MediaViewLog.aggregate([
+      { $match: { media_id: mediaId } },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$timestamp" } },
+          count: { $sum: 1 },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]);
+
+    const analyticsResult = {
+      total_views: stats.length > 0 ? stats[0].total_views : 0,
+      unique_ips: stats.length > 0 ? stats[0].unique_ips : 0,
+      views_per_day: dailyViews.reduce((acc, day) => {
+        acc[day._id] = day.count;
+        return acc;
+      }, {}),
+    };
+    console.log("lok")
+    await redisClient.set(cacheKey, JSON.stringify(analyticsResult), {
+      EX: 300,
+      NX: false,
+    });
+    res.status(200).json({ success: true, data: analyticsResult });
+  } catch (error) {
+    console.error("Analytics Error:", error);
+    res.status(500).json({ success: false, message: "Server error while fetching analytics." });
+  }
+};

@@ -2,12 +2,22 @@ import globals from "globals";
 import pluginJs from "@eslint/js";
 
 export default [
-  { languageOptions: { globals: globals.node } },
   pluginJs.configs.recommended,
   {
+    languageOptions: {
+      ecmaVersion: "latest",
+      sourceType: "module",
+      globals: {
+        ...globals.node, 
+        ...globals.jest,
+      },
+    },
+  },
+
+  {
     rules: {
-      eqeqeq: "off",
-      "no-unused-vars": "warn",
+      eqeqeq: "off", 
+      "no-unused-vars": "warn", 
       "prefer-const": [
         "error",
         {
@@ -17,6 +27,7 @@ export default [
       ],
     },
   },
+
   {
     linterOptions: {
       reportUnusedDisableDirectives: "error",

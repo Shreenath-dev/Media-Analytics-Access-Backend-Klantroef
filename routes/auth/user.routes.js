@@ -5,7 +5,7 @@ import { limiter } from "@/security/limiter";
 
 const router = express.Router();
 
-router.route("/signup").post(limiter, validation.auth.user.signup, controller.auth.users.signup);
-router.route("/login").post(limiter,validation.auth.user.signup, controller.auth.users.signin);
+router.route("/signup").post(validation.auth.user.signup, controller.auth.users.signup);
+router.route("/login").post(validation.auth.user.signup, controller.auth.users.signin);
 export default router;
 
