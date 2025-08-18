@@ -1,75 +1,96 @@
-# Media Platform Backend
+Media Platform Backend
 
 This is a robust backend for a media platform built with Node.js, Express, and MongoDB. It allows admin users to upload media files, generate secure streaming links, and track detailed analytics. The project includes features like JWT authentication, Redis caching for performance, and rate limiting for security.
 
-## Features
+Features
 
--   **Secure Authentication**: Signup and Login for admin users using JWT.
--   **Media Upload**: Upload audio/video files directly to an AWS S3 bucket.
--   **Secure Streaming Links**: Generate short-lived, signed URLs for media assets.
--   **View Tracking & Analytics**: Log every media view and retrieve aggregated analytics.
--   **Redis Caching**: Caches analytics data to reduce database load and improve response times.
--   **Rate Limiting**: Protects the view logging endpoint from abuse.
--   **Dockerized**: Comes with a multi-stage `Dockerfile` for easy, optimized deployment.
--   **Automated Testing**: Includes a full test suite using Jest and Supertest.
+Secure Authentication: Signup and Login for admin users using JWT.
 
----
+Media Upload: Upload audio/video files directly to an AWS S3 bucket.
 
-## Project Setup
+Secure Streaming Links: Generate short-lived, signed URLs for media assets.
 
-### Prerequisites
+View Tracking & Analytics: Log every media view and retrieve aggregated analytics.
 
--   Node.js (v18 or higher)
--   MongoDB
--   Redis
--   Docker
--   An AWS account with an S3 bucket
+Redis Caching: Caches analytics data to reduce database load and improve response times.
 
-### Installation & Setup
+Rate Limiting: Protects the view logging endpoint from abuse.
 
-1.  **Clone the repository:**
-    ```bash
-    git clone <your-repository-url>
-    cd <repository-name>
-    ```
+Dockerized: Comes with a multi-stage Dockerfile and docker-compose.yml for easy, optimized deployment.
 
-2.  **Install dependencies:**
-    ```bash
-    npm install
-    ```
+Automated Testing: Includes a full test suite using Jest and Supertest.
 
-3.  **Set up environment variables:**
-    Create a `.env` file in the root of the project by copying the example file:
-    ```bash
-    cp .env.example .env local.env
-    ```
-    Now, open the `.env` file and fill in your actual credentials.
+Project Setup
+Prerequisites
 
-4.  **Start the development server:**
-    ```bash
-    npm start
-    ```
+Node.js (v18 or higher)
 
----
+MongoDB
 
-## Running with Docker
+Redis
 
-1.  **Build the Docker image:**
-    ```bash
-    docker build -t media-platform-backend .
-    ```
+Docker + Docker Compose
 
-2.  **Run the Docker container:**
-    Make sure your `.env` file is complete, then run:
-    ```bash
-    docker run --env-file .env -p 3000:3000 -d media-platform-backend
-    ```
+An AWS account with an S3 bucket
 
----
+Installation & Setup
 
-## Running Tests
+Clone the repository:
 
-To run the complete test suite, use the following command:
+git clone <your-repository-url>
+cd <repository-name>
 
-```bash
+
+Install dependencies (for local dev):
+
+npm install
+
+
+Set up environment variables:
+Create local and Docker env files:
+
+cp .env.example local.env
+cp .env.example docker.env
+
+
+Use local.env when running locally (npm start)
+
+Use docker.env when running with Docker (docker-compose)
+
+Start the development server locally:
+
+npm start
+
+Running with Docker
+
+This project includes a docker-compose.yml that sets up the backend, MongoDB, and Redis in one command.
+
+Build and start all services:
+
+docker-compose --env-file docker.env up --build
+
+
+Access the backend:
+The backend will be available at:
+
+http://localhost:5000
+
+
+Stop services:
+
+docker-compose down
+
+Running Tests
+
+To run the complete test suite, use:
+
 npm test
+
+
+✅ Now your Docker section matches reality:
+
+Uses docker-compose
+
+Uses docker.env
+
+Runs on port 5000

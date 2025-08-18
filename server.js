@@ -20,15 +20,15 @@ iot.use(
   cors({
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
-    origin:["http://localhost:8080"],
+    origin: ["http://localhost:8080"],
   })
 );
 
-iot.use(bodyParser.urlencoded({extended: true, limit: "16kb"}))
-iot.use(bodyParser.json({limit:"16kb"}))
-iot.use(cookieParser())
+iot.use(bodyParser.urlencoded({ extended: true, limit: "16kb" }));
+iot.use(bodyParser.json({ limit: "16kb" }));
+iot.use(cookieParser());
 iot.use(frameGuard({ action: "sameorigin" }));
-iot.use(morgan("dev"))
+iot.use(morgan("dev"));
 
 iot.use(passport.initialize());
 require("./security/passport").userAuthMiddleware(passport);
@@ -52,6 +52,3 @@ databaseConnect((isConnect) => {
 });
 
 module.exports = server;
-
-
-
